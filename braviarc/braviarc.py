@@ -8,6 +8,7 @@ dedicated to Isabel
 """
 import logging
 import base64
+import collections
 import json
 import socket
 import struct
@@ -93,7 +94,13 @@ class BraviaRC:
             msg = b'\xff' * 6 + hw_addr * 16
             socket_instance = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             socket_instance.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            print("send to tv " + self._host)
+            socket_instance.sendto(msg, (self._host, 9))
+            print("send to brocast")
             socket_instance.sendto(msg, ('<broadcast>', 9))
+            print("send to network broadcast")
+            socket_instance.sendto(msg, ('192.168.0.255', 9))
+
             socket_instance.close()
 
     def send_req_ircc(self, params, log_errors=True):
@@ -164,7 +171,7 @@ class BraviaRC:
                     if not resp.get('error'):
                         original_content_list.extend(resp.get('result')[0])
 
-            return_value = {}
+            return_value = collections.OrderedDict()
             for content_item in original_content_list:
                 return_value[content_item['title']] = content_item['uri']
             return return_value
